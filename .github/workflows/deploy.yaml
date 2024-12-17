@@ -17,13 +17,10 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build and Push Docker Image
-        env:
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
         run: |
-          echo "${DOCKER_HUB_PASSWORD}" | docker login --username "${DOCKER_HUB_USERNAME}" --password-stdin
-          docker build -t ${DOCKER_HUB_USERNAME}/microservices:latest .
-          docker push ${DOCKER_HUB_USERNAME}/microservices:latest
+          echo ${{ secrets.DOCKER_HUB_USERNAME }} | docker login --username ${{ secrets.DOCKER_HUB_PASSWORD }} --password-stdin
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/microservices:latest .
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/microservices:latest
 
       - name: Configure AWS CLI
         uses: aws-actions/configure-aws-credentials@v3
