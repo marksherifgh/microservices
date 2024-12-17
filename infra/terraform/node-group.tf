@@ -2,13 +2,15 @@ resource "aws_iam_role" "nodes" {
   name = "eks-node-group-nodes"
 
   assume_role_policy = jsonencode({
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "ec2.amazonaws.com"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
       }
-    }]
+    ]
     Version = "2012-10-17"
   })
 }
@@ -34,14 +36,53 @@ resource "aws_iam_role_policy_attachment" "amazon_ssm_managed_instance_core" {
   role       = aws_iam_role.nodes.name
 }
 
+resource "aws_security_group" "eks_nodes" {
+  name        = "eks-node-group-sg"
+  description = "Security group for EKS node group"
+  vpc_id      = aws_vpc.vpc.id
+
+  # Allow HTTP traffic from anywhere
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow HTTPS traffic from anywhere
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow traffic from within the VPC
+  ingress {
+    from_port       = 0
+    to_port         = 65535
+    protocol        = "tcp"
+    security_groups = [aws_security_group.eks_nodes.id]
+  }
+
+  # Allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_eks_node_group" "public_nodes" {
-  cluster_name    = aws_eks_cluster.demo.name
-  node_group_name = "public-nodes"
-  node_role_arn   = aws_iam_role.nodes.arn
+  cluster_name       = aws_eks_cluster.demo.name
+  node_group_name    = "public-nodes"
+  node_role_arn      = aws_iam_role.nodes.arn
+  security_group_ids = [aws_security_group.eks_nodes.id]
 
   subnet_ids = [
-    aws_subnet.private_eu_west_1a.id,
-    aws_subnet.private_eu_west_1b.id
+    aws_subnet.public_eu_west_1b.id,
+    aws_subnet.public_eu_west_1a.id
   ]
 
   capacity_type  = "ON_DEMAND"
