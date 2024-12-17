@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: flask-app
-          image: msherif98/microservices:v1.0.0
+          image: msherif98/microservices:latest
           ports:
             - containerPort: 5000
           resources:
