@@ -1,1 +1,4 @@
 infra
+.github
+.gitignore
+.dockerignore
