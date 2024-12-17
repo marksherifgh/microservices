@@ -14,3 +14,4 @@
     3. Fetch the kubeconfig from EKS cluster `aws eks update-kubeconfig --name microservice-eks --region eu-west-1`
     4. Apply the manifests using `kubectl apply -f infra/manifests`
 11. Added secrets for docker login and AWS account to CI/CD pipeline variables
+12. Get the LoadBalancer IP address using kubectl `kubectl get services`
