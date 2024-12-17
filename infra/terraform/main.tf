@@ -1,7 +1,14 @@
 provider "aws" {
   region = "eu-west-1"
 }
-
+terraform {
+  backend "s3" {
+    bucket         = "microservice-tf-state"
+    key            = "eks/terraform.tfstate"
+    region         = "eu-west-1"
+    encrypt        = true
+  }
+}
 
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
@@ -11,6 +18,12 @@ resource "aws_subnet" "subnet_a" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "eu-west-1a"
+  map_public_ip_on_launch = true
+}
+resource "aws_subnet" "subnet_b" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.2.0/24"
+  availability_zone       = "eu-west-1b"
   map_public_ip_on_launch = true
 }
 
@@ -24,7 +37,7 @@ resource "aws_eks_cluster" "eks" {
   name     = "microservice-eks"
   role_arn = aws_iam_role.eks_cluster_role.arn
   vpc_config {
-    subnet_ids = [aws_subnet.subnet_a.id]
+    subnet_ids = [aws_subnet.subnet_a.id, aws_subnet.subnet_b.id]
   }
 
   depends_on = [aws_iam_role_policy_attachment.eks_policy_attachment]
