@@ -30,17 +30,10 @@ resource "aws_iam_role_policy_attachment" "nodes_amazon_ec2_container_registry_r
   role       = aws_iam_role.nodes.name
 }
 
-# Optional: only if you want to "SSH" to your EKS nodes.
-resource "aws_iam_role_policy_attachment" "amazon_ssm_managed_instance_core" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  role       = aws_iam_role.nodes.name
-}
-
-
 resource "aws_eks_node_group" "public_nodes" {
-  cluster_name       = aws_eks_cluster.demo.name
-  node_group_name    = "public-nodes"
-  node_role_arn      = aws_iam_role.nodes.arn
+  cluster_name    = aws_eks_cluster.demo.name
+  node_group_name = "public-nodes"
+  node_role_arn   = aws_iam_role.nodes.arn
 
   subnet_ids = [
     aws_subnet.public_eu_west_1b.id,
@@ -69,4 +62,7 @@ resource "aws_eks_node_group" "public_nodes" {
     aws_iam_role_policy_attachment.nodes_amazon_eks_cni_policy,
     aws_iam_role_policy_attachment.nodes_amazon_ec2_container_registry_read_only,
   ]
+  tags = {
+    "kubernetes.io/cluster/${aws_eks_cluster.demo.name}" = "owned"
+  }
 }
