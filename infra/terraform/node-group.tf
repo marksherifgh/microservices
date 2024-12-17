@@ -34,14 +34,14 @@ resource "aws_iam_role_policy_attachment" "amazon_ssm_managed_instance_core" {
   role       = aws_iam_role.nodes.name
 }
 
-resource "aws_eks_node_group" "private_nodes" {
+resource "aws_eks_node_group" "public_nodes" {
   cluster_name    = aws_eks_cluster.demo.name
-  node_group_name = "private-nodes"
+  node_group_name = "public-nodes"
   node_role_arn   = aws_iam_role.nodes.arn
 
-  # Single subnet to avoid data transfer charges while testing.
   subnet_ids = [
-    aws_subnet.private_eu_west_1a.id
+    aws_subnet.private_eu_west_1a.id,
+    aws_subnet.private_eu_west_1b.id
   ]
 
   capacity_type  = "ON_DEMAND"
