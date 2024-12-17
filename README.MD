@@ -11,7 +11,7 @@
 10. Created CI/CD pipeline using github actions under `.github/workflows/deploy.yaml` to do the following:
     1. Build the flask app image and deploy it to my container registry given a docker access token
     2. Deploy the EKS cluster given my aws account creds `terraform plan` `terraform apply -auto-approve`
-    3. Fetch the kubeconfig from EKS cluster `aws eks update-kubeconfig --name microservice-eks --region eu-west-1`
+    3. Fetch the kubeconfig from EKS cluster `aws eks update-kubeconfig --name eks-demo --region eu-west-1`
     4. Apply the manifests using `kubectl apply -f infra/manifests`
 11. Added secrets for docker login and AWS account to CI/CD pipeline variables
 12. Get the LoadBalancer IP address using kubectl `kubectl get services`
