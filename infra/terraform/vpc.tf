@@ -1,29 +1,10 @@
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 4.0"
-
-  name = var.vpc_tag_name
-  cidr = var.vpc_cidr_block
-
-  azs             = var.az
-  private_subnets = [var.private_subnet_cidr_block_1, var.private_subnet_cidr_block_2]
-  public_subnets  = [var.public_subnet_cidr_block_1, var.public_subnet_cidr_block_2]
-
-  enable_nat_gateway   = true
-  single_nat_gateway   = true
+resource "aws_vpc" "vpc" {
+  cidr_block           = var.vpc_cidr_block
+  enable_dns_support   = true
   enable_dns_hostnames = true
 
-  public_subnet_tags = {
-    "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
-    "kubernetes.io/role/elb"                        = 1
-  }
-
-  private_subnet_tags = {
-    "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
-    "kubernetes.io/role/internal-elb"               = 1
-  }
   tags = {
-    "Name" = var.vpc_tag_name
+    Name                                            = var.vpc_tag_name
+    "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
   }
 }
-

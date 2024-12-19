@@ -1,37 +1,40 @@
-module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "~> 19.0"
+resource "aws_iam_role" "demo" {
+  name = "eks-cluster-demo"
 
-  cluster_name    = var.eks_cluster_name
-  cluster_version = var.eks_cluster_version
-  subnet_ids      = module.vpc.public_subnets
-  vpc_id          = module.vpc.vpc_id
-
-  eks_managed_node_groups = {
-    public_nodes = {
-      desired_capacity = 1
-      max_capacity     = 2
-      min_capacity     = 1
-
-      instance_types = ["t3.medium"]
-
-      labels = {
-        role = "general"
-      }
-
-      tags = {
-        "kubernetes.io/cluster/${var.eks_cluster_name}" = "owned"
-      }
-
-      additional_policies = [
-        "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
-        "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
-        "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
-      ]
+  assume_role_policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "eks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
     }
+  ]
+}
+POLICY
+}
+
+resource "aws_iam_role_policy_attachment" "demo_amazon_eks_cluster_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.demo.name
+}
+
+resource "aws_eks_cluster" "demo" {
+  name     = var.eks_cluster_name
+  version  = var.eks_cluster_version
+  role_arn = aws_iam_role.demo.arn
+
+  vpc_config {
+    subnet_ids = [
+      aws_subnet.private_eu_west_1a.id,
+      aws_subnet.private_eu_west_1b.id,
+      aws_subnet.public_eu_west_1a.id,
+      aws_subnet.public_eu_west_1b.id
+    ]
   }
 
-  tags = {
-    "Name" = var.eks_cluster_name
-  }
+  depends_on = [aws_iam_role_policy_attachment.demo_amazon_eks_cluster_policy]
 }
